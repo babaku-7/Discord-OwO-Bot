@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: owo_root_pass
+      MYSQL_DATABASE: owo
+      MYSQL_USER: owo
+      MYSQL_PASSWORD: owo_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Import awal manual sekali saja:
+      # docker cp secret/CREATE-OWO-TABLES.sql <container>:/tmp/init.sql
+      # docker exec -it <container> mariadb -uowo -powo_pass owo < /tmp/init.sql
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Service bot: build dari Dockerfile.belajar (Node20 + canvas deps).
+  # Default sleep biar bisa exec manual. Kalau token+DB udah siap,
+  # ganti command ke ["node","index.js"] atau: docker compose run --rm bot node index.js
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.belajar
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: owo
+      MYSQL_PASS: owo_pass
+      REDIS_HOST: redis
+    command: sleep infinity
+
+volumes:
+  db_data:
+  redis_data:

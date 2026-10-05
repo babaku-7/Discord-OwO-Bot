@@ -1,0 +1,16 @@
+# Belajar image: Node 20 + build tools buat canvas/erlpack native.
+# Upstream era Node 14-16, jadi di Node 22 native build pasti jebol.
+FROM node:20-bookworm
+
+# System deps buat canvas@2 + bufferutil + erlpack
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3 pkg-config \
+    libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY package*.json ./
+# ignore-scripts dulu biar native gak langsung jebol, rebuild manual kalau perlu
+RUN npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
+COPY . .
+CMD ["node", "index.js"]
