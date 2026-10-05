@@ -11,7 +11,7 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      # Import awal manual sekali saja:
+      # One-time manual import:
       # docker cp secret/CREATE-OWO-TABLES.sql <container>:/tmp/init.sql
       # docker exec -it <container> mariadb -uowo -powo_pass owo < /tmp/init.sql
 
@@ -23,13 +23,13 @@ services:
     volumes:
       - redis_data:/data
 
-  # Service bot: build dari Dockerfile.belajar (Node20 + canvas deps).
-  # Default sleep biar bisa exec manual. Kalau token+DB udah siap,
-  # ganti command ke ["node","index.js"] atau: docker compose run --rm bot node index.js
+  # Bot service: built from Dockerfile.dev (Node 20 + canvas deps).
+  # Sleeps by default so you can exec into it manually. Once the token + DB are ready,
+  # switch command to ["node","index.js"] or run: docker compose run --rm bot node index.js
   bot:
     build:
       context: .
-      dockerfile: Dockerfile.belajar
+      dockerfile: Dockerfile.dev
     working_dir: /app
     volumes:
       - .:/app
